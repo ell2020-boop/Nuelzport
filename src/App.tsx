@@ -595,7 +595,7 @@ export default function App() {
                   </div>
 
                   <p className="text-center text-sm text-[#A1A1AA]">
-                    I reply within 24 hours.
+                    I respond within 12 hours.
                   </p>
                 </div>
 
