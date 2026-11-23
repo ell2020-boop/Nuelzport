@@ -4,8 +4,6 @@ import {
   ArrowUpRight,
   ArrowRight,
   ArrowLeft,
-  Copy,
-  Check,
   Mail,
   MessageCircle,
 } from 'lucide-react';
@@ -58,7 +56,6 @@ export default function App() {
   const [activeSection, setActiveSection] = useState<SectionId>(initialRoute.section);
   const [activeCategory, setActiveCategory] = useState<ProjectCategory>('All Work');
   const [selectedProject, setSelectedProject] = useState<PortfolioProject | null>(null);
-  const [copiedEmail, setCopiedEmail] = useState(false);
 
   useEffect(() => {
     document.title = PAGE_TITLES[activePage];
@@ -120,16 +117,6 @@ export default function App() {
     activeCategory === 'All Work'
       ? PORTFOLIO_PROJECTS
       : PORTFOLIO_PROJECTS.filter((project) => project.category === activeCategory);
-
-  const handleCopyEmail = async () => {
-    try {
-      await navigator.clipboard.writeText(DESIGNER_PROFILE.email);
-      setCopiedEmail(true);
-      setTimeout(() => setCopiedEmail(false), 2400);
-    } catch {
-      window.location.href = `mailto:${DESIGNER_PROFILE.email}`;
-    }
-  };
 
   const handleModalNavigate = (direction: 'prev' | 'next') => {
     if (!selectedProject) return;
@@ -193,24 +180,6 @@ export default function App() {
                     >
                       <span>Explore Selected Works</span>
                       <ArrowRight className="w-4 h-4" aria-hidden="true" />
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={handleCopyEmail}
-                      className="inline-flex items-center gap-2 px-5 py-3 text-sm font-medium text-[#E4E4E7] bg-[#0C0C0E] hover:bg-[#141417] border border-[#27272A] rounded-lg transition-colors duration-150 cursor-pointer whitespace-nowrap shrink-0"
-                    >
-                      {copiedEmail ? (
-                        <>
-                          <Check className="w-4 h-4 text-[#60A5FA]" aria-hidden="true" />
-                          <span>Copied {DESIGNER_PROFILE.email}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-4 h-4 text-[#A1A1AA]" aria-hidden="true" />
-                          <span>{DESIGNER_PROFILE.email}</span>
-                        </>
-                      )}
                     </button>
                   </div>
                 </div>

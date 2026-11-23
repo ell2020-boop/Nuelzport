@@ -52,11 +52,11 @@ export const DESIGNER_PROFILE = {
   whatsappUrl: 'https://wa.me/+2348144771422',
   whatsappDisplay: '+234 814 477 1422',
   location: 'Lagos · Remote Worldwide',
-  availability: 'Accepting Q4 2026 & Q1 2027 client projects',
+  availability: 'Accepting client projects',
 };
 
 export const PROOF_METRICS = [
-  { value: '2+', label: 'Years Designing', context: 'Real Estate, Fashion & Services' },
+  { value: '4+', label: 'Years Designing', context: 'Real Estate, Fashion & Services' },
   { value: '21', label: 'Business Websites', context: 'Launched Across 6 Countries' },
   { value: '+61%', label: 'Avg. Inquiry Lift', context: 'Measured 90 Days Post-Launch' },
   { value: '100%', label: 'Direct Partnership', context: 'Dedicated Principal Execution' },
