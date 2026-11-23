@@ -563,9 +563,9 @@ export default function App() {
               className="border-t border-[#18181B] bg-[#050505] flex-1 scroll-mt-16"
             >
               <div className="max-w-[1280px] w-full mx-auto px-5 sm:px-8 py-20 lg:py-28">
-                <div className="max-w-3xl space-y-6">
+                <div className="space-y-6">
                   <p className="text-xs font-medium text-[#60A5FA]">Contact</p>
-                  <h2 className="text-3xl sm:text-5xl font-semibold tracking-tight text-[#F4F4F5] leading-[1.1]">
+                  <h2 className="max-w-3xl text-3xl sm:text-5xl font-semibold tracking-tight text-[#F4F4F5] leading-[1.1]">
                     Ready to elevate your business online?
                   </h2>
                   <p className="text-base leading-relaxed text-[#A1A1AA] max-w-xl">
@@ -573,13 +573,13 @@ export default function App() {
                     discuss your website.
                   </p>
 
-                  <div className="pt-4 flex flex-wrap items-center gap-4">
+                  <div className="pt-4 !mb-3 flex flex-wrap items-center justify-center gap-4">
                     <a
                       href={`mailto:${DESIGNER_PROFILE.email}`}
                       className="inline-flex items-center gap-2.5 px-6 py-3.5 text-base sm:text-lg font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-lg transition-colors duration-150 whitespace-nowrap"
                     >
                       <Mail className="w-5 h-5" aria-hidden="true" />
-                      <span>{DESIGNER_PROFILE.email}</span>
+                      <span>Email me</span>
                     </a>
 
                     <a
@@ -592,26 +592,11 @@ export default function App() {
                       <span>WhatsApp</span>
                       <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
                     </a>
-
-                    <button
-                      type="button"
-                      onClick={handleCopyEmail}
-                      aria-label="Copy email address"
-                      className="inline-flex items-center gap-2 px-5 py-3.5 text-sm font-medium text-[#E4E4E7] bg-[#0C0C0E] hover:bg-[#141417] border border-[#27272A] rounded-lg transition-colors duration-150 cursor-pointer whitespace-nowrap"
-                    >
-                      {copiedEmail ? (
-                        <>
-                          <Check className="w-4 h-4 text-[#60A5FA]" aria-hidden="true" />
-                          <span>Copied</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-4 h-4 text-[#A1A1AA]" aria-hidden="true" />
-                          <span>Copy Email</span>
-                        </>
-                      )}
-                    </button>
                   </div>
+
+                  <p className="text-center text-sm text-[#A1A1AA]">
+                    I reply within 24 hours.
+                  </p>
                 </div>
 
                 <div className="mt-16 pt-8 border-t border-[#18181B] flex items-center justify-between gap-4">
