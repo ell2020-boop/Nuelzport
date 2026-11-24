@@ -56,8 +56,8 @@ export const DESIGNER_PROFILE = {
 };
 
 export const PROOF_METRICS = [
-  { value: '4+', label: 'Years Designing', context: 'Real Estate, Fashion & Services' },
-  { value: '21', label: 'Business Websites', context: 'Launched Across 6 Countries' },
+  { value: '2+', label: 'Years Designing', context: 'Real Estate, Fashion & Services' },
+  { value: '5', label: 'Business Websites', context: 'Launched Across Countries' },
   { value: '+61%', label: 'Avg. Inquiry Lift', context: 'Measured 90 Days Post-Launch' },
   { value: '100%', label: 'Direct Partnership', context: 'Dedicated Principal Execution' },
 ];

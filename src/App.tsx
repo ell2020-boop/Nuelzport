@@ -325,6 +325,8 @@ export default function App() {
                               <span>{project.category}</span>
                               <span aria-hidden="true">·</span>
                               <span className="font-mono tabular-nums">{project.year}</span>
+                              <span aria-hidden="true">·</span>
+                              <span className="font-medium text-white">Concept</span>
                             </div>
 
                             <h3 className="text-xl sm:text-2xl font-semibold tracking-tight text-[#F4F4F5] group-hover:text-[#60A5FA] transition-colors duration-150">
@@ -510,15 +512,20 @@ export default function App() {
                     >
                       <p className="text-sm leading-relaxed text-[#E4E4E7]">“{review.quote}”</p>
 
-                      <footer className="pt-4 border-t border-[#18181B]">
-                        <div className="text-sm font-semibold text-[#F4F4F5]">{review.author}</div>
-                        <div className="text-xs text-[#A1A1AA]">
-                          <span>{review.role}</span>
-                          <span className="mx-1.5 text-[#52525B]" aria-hidden="true">
-                            ·
-                          </span>
-                          <span>{review.company}</span>
+                      <footer className="pt-4 border-t border-[#18181B] flex items-end justify-between gap-3">
+                        <div>
+                          <div className="text-sm font-semibold text-[#F4F4F5]">{review.author}</div>
+                          <div className="text-xs text-[#A1A1AA]">
+                            <span>{review.role}</span>
+                            <span className="mx-1.5 text-[#52525B]" aria-hidden="true">
+                              ·
+                            </span>
+                            <span>{review.company}</span>
+                          </div>
                         </div>
+                        <span className="text-xs font-medium text-white whitespace-nowrap shrink-0">
+                          Concept
+                        </span>
                       </footer>
                     </blockquote>
                   ))}

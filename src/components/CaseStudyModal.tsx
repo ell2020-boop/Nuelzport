@@ -57,6 +57,8 @@ export function CaseStudyModal({
             <span>{project.category}</span>
             <span aria-hidden="true">·</span>
             <span className="font-mono tabular-nums">{project.year}</span>
+            <span aria-hidden="true">·</span>
+            <span className="font-medium text-white">Concept</span>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
