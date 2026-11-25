@@ -12,9 +12,10 @@ import {
   PROOF_METRICS,
   PORTFOLIO_PROJECTS,
   SERVICES,
-  CLIENT_REVIEWS,
+  SERVICE_GUARANTEES,
   PROCESS_STEPS,
   TOOLKIT_GROUPS,
+  FAQ_ITEMS,
   type PageId,
   type SectionId,
   type ProjectCategory,
@@ -23,7 +24,8 @@ import {
 import { Navbar } from './components/Navbar';
 import { ResilientImage } from './components/ResilientImage';
 import { CaseStudyModal } from './components/CaseStudyModal';
-import { HeroCodingBackground } from './components/HeroCodingBackground';
+import { HeroAmbientBackdrop } from './components/HeroAmbientBackdrop';
+import { FaqAccordion } from './components/FaqAccordion';
 import {
   EDITORIAL_EASE,
   RevealBlock,
@@ -35,9 +37,10 @@ import {
 
 const FILTER_CATEGORIES: ProjectCategory[] = [
   'All Work',
-  'Real Estate',
-  'Brands & Retail',
-  'Service Businesses',
+  'Home Services',
+  'Health & Wellness',
+  'Hospitality',
+  'One-Page Sites',
 ];
 
 const PAGE_TITLES: Record<PageId, string> = {
@@ -50,7 +53,10 @@ function parseHashToRoute(hash: string): { page: PageId; section: SectionId } {
   if (cleaned === 'works') return { page: 'home', section: 'works' };
   if (cleaned === 'services') return { page: 'home', section: 'services' };
   if (cleaned === 'about') return { page: 'about', section: 'about' };
-  if (cleaned === 'reviews') return { page: 'about', section: 'reviews' };
+  if (cleaned === 'guarantees' || cleaned === 'reviews') {
+    return { page: 'about', section: 'guarantees' };
+  }
+  if (cleaned === 'faq') return { page: 'about', section: 'faq' };
   if (cleaned === 'contact') return { page: 'about', section: 'contact' };
   return { page: 'home', section: 'home' };
 }
@@ -85,7 +91,6 @@ export default function App() {
   const pendingScrollSectionRef = useRef<SectionId | null>(null);
   const isProgrammaticScrollRef = useRef(false);
   const scrollLockTimerRef = useRef<number | null>(null);
-  const heroSectionRef = useRef<HTMLElement | null>(null);
 
   const lockScrollSpyBriefly = useCallback((durationMs = 750) => {
     isProgrammaticScrollRef.current = true;
@@ -133,7 +138,9 @@ export default function App() {
 
   useEffect(() => {
     const sectionsForPage: SectionId[] =
-      activePage === 'home' ? ['home', 'works', 'services'] : ['about', 'reviews', 'contact'];
+      activePage === 'home'
+        ? ['home', 'works', 'services']
+        : ['about', 'guarantees', 'faq', 'contact'];
 
     const onScroll = () => {
       if (isProgrammaticScrollRef.current) return;
@@ -243,17 +250,10 @@ export default function App() {
                 <PageMountNotifier onMount={flushPendingScroll} />
                 {/* Hero & Proof Strip */}
                 <section
-                  ref={heroSectionRef}
                   id="home-section"
-                  className="relative w-full overflow-hidden"
+                  className="relative w-full overflow-hidden bg-[#050811]"
                 >
-                  <HeroCodingBackground sectionRef={heroSectionRef} />
-
-                  {/* Subtle Ambient Studio Glow */}
-                  <div
-                    aria-hidden="true"
-                    className="animate-ambient-glow pointer-events-none absolute -top-12 right-0 w-[420px] h-[420px] rounded-full bg-[#2563EB]/15 blur-[110px]"
-                  />
+                  <HeroAmbientBackdrop />
 
                   <div className="relative z-10 max-w-[1280px] w-full mx-auto px-5 sm:px-8 pt-12 pb-16 lg:pt-16 lg:pb-20">
                     <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-stretch">
@@ -272,15 +272,16 @@ export default function App() {
 
                           <MaskedLineReveal immediate delay={0.08}>
                             <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-semibold leading-[1.08] tracking-tight text-[#F4F4F5] max-w-2xl">
-                              Designing high-converting websites for ambitious businesses &amp; brands.
+                              High-converting websites for home service, health, wellness and
+                              hospitality brands.
                             </h1>
                           </MaskedLineReveal>
 
                           <RevealBlock immediate y={16} delay={0.16}>
                             <p className="text-base sm:text-lg leading-relaxed text-[#D4D4D8] max-w-xl">
-                              I partner with real estate firms, fashion labels, hospitality groups, and
-                              service businesses to craft memorable brand websites that build instant
-                              credibility and turn visitors into paying clients.
+                              I build fast, mobile-first websites and focused one-page sites that
+                              build instant trust and turn visitors into direct calls, bookings,
+                              emails and WhatsApp inquiries.
                             </p>
                           </RevealBlock>
                         </div>
@@ -303,18 +304,18 @@ export default function App() {
                         </RevealBlock>
                       </div>
 
-                      {/* Right Column: Studio Workspace Visual with 3D Interactive Tilt */}
+                      {/* Right Column: Clean Website Preview Visual */}
                       <div className="lg:col-span-5">
                         <TiltMediaFrame className="group relative h-80 sm:h-[420px] lg:h-full min-h-[380px] overflow-hidden rounded-2xl border border-[#27272A] hover:border-[#3B82F6]/60 bg-[#0C0C0E] shadow-2xl shadow-black/60 transition-colors duration-500">
                           <ResilientImage
                             src="/src/assets/images/hero_home_service_website_1795569770291.jpg"
-                            alt="High-end luxury home service website displayed on a frameless studio monitor"
-                            title="Residence & Co. Home Service Website"
+                            alt="High-end residential home service website displayed on a studio monitor"
+                            title="Home Service Website Preview"
                             className="w-full h-full object-cover transition-[transform,filter] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05] group-hover:brightness-105 will-change-transform"
                           />
                           <div
                             aria-hidden="true"
-                            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#050505]/85 via-transparent to-[#3B82F6]/10 opacity-90 group-hover:opacity-100 transition-opacity duration-500"
+                            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#050505]/80 via-transparent to-[#3B82F6]/10 opacity-90 group-hover:opacity-100 transition-opacity duration-500"
                           />
                           <div className="absolute z-20 bottom-5 left-5 right-5 flex items-center justify-between gap-4 text-xs text-[#E4E4E7]">
                             <span>{DESIGNER_PROFILE.availability}</span>
@@ -363,15 +364,15 @@ export default function App() {
                   <div className="animate-editorial-marquee text-xs sm:text-sm tracking-wide text-[#94A3B8]">
                     {[0, 1].map((loopIdx) => (
                       <div key={loopIdx} className="flex items-center gap-8 pr-8 whitespace-nowrap">
-                        <span>Real Estate Websites</span>
+                        <span>Home Service Websites</span>
                         <span className="text-[#3F3F46]">·</span>
-                        <span>Fashion &amp; Retail Flagships</span>
+                        <span>Health &amp; Wellness Studios</span>
                         <span className="text-[#3F3F46]">·</span>
-                        <span>Service Business Platforms</span>
+                        <span>Boutique Hotels &amp; Dining</span>
                         <span className="text-[#3F3F46]">·</span>
-                        <span>Brand Storytelling</span>
+                        <span>Focused One-Page Sites</span>
                         <span className="text-[#3F3F46]">·</span>
-                        <span>Conversion-Focused Design</span>
+                        <span>One-Tap WhatsApp &amp; Call Setup</span>
                         <span className="text-[#3F3F46]">·</span>
                         <span>Fortune Allwell Studio</span>
                         <span className="text-[#3F3F46]">·</span>
@@ -392,7 +393,7 @@ export default function App() {
                       </RevealBlock>
                       <MaskedLineReveal delay={0.06}>
                         <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#F4F4F5]">
-                          Web experiences built to grow businesses and elevate brands.
+                          Concept websites built for high-trust service and hospitality brands.
                         </h2>
                       </MaskedLineReveal>
                     </div>
@@ -499,7 +500,7 @@ export default function App() {
                                       {project.summary}
                                     </p>
                                     <p className="text-xs font-medium text-[#60A5FA]">
-                                      {project.outcomeMetric}
+                                      {project.projectFocus}
                                     </p>
                                   </div>
 
@@ -533,7 +534,7 @@ export default function App() {
                         </RevealBlock>
                         <MaskedLineReveal delay={0.06}>
                           <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#F4F4F5]">
-                            Tailored web craft for growing businesses.
+                            Focused web design built for calls, bookings, and leads.
                           </h2>
                         </MaskedLineReveal>
                       </div>
@@ -591,7 +592,7 @@ export default function App() {
               </motion.div>
             )}
 
-            {/* PAGE 2: ABOUT + REVIEWS + CONTACT */}
+            {/* PAGE 2: ABOUT + GUARANTEES + CONTACT */}
             {activePage === 'about' && (
               <motion.div
                 key="page-about"
@@ -637,15 +638,17 @@ export default function App() {
                         </RevealBlock>
                         <MaskedLineReveal immediate delay={0.08}>
                           <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#F4F4F5]">
-                            Helping brands look unmistakable and sell with confidence.
+                            Helping home service, hospitality, health &amp; wellness brands turn visitors into clients.
                           </h1>
                         </MaskedLineReveal>
                         <RevealBlock immediate y={16} delay={0.16}>
                           <p className="text-base leading-relaxed text-[#D4D4D8]">
-                            Over the past two years, I’ve helped real estate agencies, fashion
-                            labels, consultancies, and service businesses replace generic templates
-                            with bespoke websites that earn immediate customer trust. Every layout is
-                            designed around how real buyers browse, compare, and take action.
+                            Over the past two years, I have focused on crafting fast, mobile-first
+                            websites for home service businesses, health and wellness studios,
+                            single-venue hospitality brands such as boutique hotels, restaurants, and
+                            lounges, and professionals who need a sharp one-page site. Every layout is
+                            built to earn immediate trust and guide visitors straight into a call,
+                            booking, or WhatsApp message.
                           </p>
                         </RevealBlock>
                       </div>
@@ -722,27 +725,27 @@ export default function App() {
                   </div>
                 </section>
 
-                {/* Reviews Section */}
+                {/* Process & Guarantees Section (replaces fabricated reviews) */}
                 <section
-                  id="reviews-section"
+                  id="guarantees-section"
                   className="border-t border-[#18181B] bg-[#060911]/55 backdrop-blur-md scroll-mt-16"
                 >
                   <div className="max-w-[1280px] w-full mx-auto px-5 sm:px-8 py-20 lg:py-24">
                     <div className="space-y-2 mb-12 max-w-xl">
                       <RevealBlock y={12}>
-                        <p className="text-xs font-medium text-[#60A5FA]">Reviews</p>
+                        <p className="text-xs font-medium text-[#60A5FA]">Guarantees</p>
                       </RevealBlock>
                       <MaskedLineReveal delay={0.06}>
                         <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#F4F4F5]">
-                          Trusted by business founders and brand leaders.
+                          Built for fast turnaround, mobile clarity, and direct inquiries.
                         </h2>
                       </MaskedLineReveal>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {CLIENT_REVIEWS.map((review, idx) => (
-                        <motion.blockquote
-                          key={review.author}
+                      {SERVICE_GUARANTEES.map((item, idx) => (
+                        <motion.div
+                          key={item.step}
                           initial={{ opacity: 0, y: 24, scale: 0.98 }}
                           whileInView={{ opacity: 1, y: 0, scale: 1 }}
                           viewport={{ once: true, amount: 0.05 }}
@@ -755,30 +758,55 @@ export default function App() {
                           className="group rounded-2xl border border-[#27272A] hover:border-[#3B82F6]/45 bg-[#080B12]/80 backdrop-blur-md shadow-xl shadow-black/30 transition-colors duration-300"
                         >
                           <SpotlightSurface className="p-6 sm:p-7 h-full flex flex-col justify-between gap-6">
-                            <p className="relative z-20 text-sm leading-relaxed text-[#E4E4E7]">
-                              “{review.quote}”
-                            </p>
-
-                            <footer className="relative z-20 pt-4 border-t border-[#18181B] flex items-end justify-between gap-3">
-                              <div>
-                                <div className="text-sm font-semibold text-[#F4F4F5] group-hover:text-[#60A5FA] transition-colors duration-200">
-                                  {review.author}
-                                </div>
-                                <div className="text-xs text-[#A1A1AA]">
-                                  <span>{review.role}</span>
-                                  <span className="mx-1.5 text-[#52525B]" aria-hidden="true">
-                                    ·
-                                  </span>
-                                  <span>{review.company}</span>
-                                </div>
+                            <div className="relative z-20 space-y-3">
+                              <div className="font-mono text-xs text-[#60A5FA] tabular-nums">
+                                {item.step}
                               </div>
-                              <span className="text-xs font-medium text-white whitespace-nowrap shrink-0">
-                                Concept
+                              <h3 className="text-lg font-semibold text-[#F4F4F5] group-hover:text-[#60A5FA] transition-colors duration-200">
+                                {item.title}
+                              </h3>
+                              <p className="text-sm leading-relaxed text-[#D4D4D8]">{item.detail}</p>
+                            </div>
+
+                            <div className="relative z-20 pt-4 border-t border-[#18181B] flex items-center justify-between gap-3">
+                              <span className="text-xs font-medium text-[#60A5FA]">
+                                {item.highlight}
                               </span>
-                            </footer>
+                            </div>
                           </SpotlightSurface>
-                        </motion.blockquote>
+                        </motion.div>
                       ))}
+                    </div>
+                  </div>
+                </section>
+
+                {/* FAQ Section */}
+                <section
+                  id="faq-section"
+                  className="border-t border-[#18181B] bg-[#050811]/70 backdrop-blur-md scroll-mt-16"
+                >
+                  <div className="max-w-[1280px] w-full mx-auto px-5 sm:px-8 py-20 lg:py-24">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+                      <div className="lg:col-span-4 space-y-3 lg:sticky lg:top-24">
+                        <RevealBlock y={12}>
+                          <p className="text-xs font-medium text-[#60A5FA]">FAQ</p>
+                        </RevealBlock>
+                        <MaskedLineReveal delay={0.06}>
+                          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#F4F4F5]">
+                            Common questions before getting started.
+                          </h2>
+                        </MaskedLineReveal>
+                        <RevealBlock y={14} delay={0.12}>
+                          <p className="text-sm leading-relaxed text-[#A1A1AA]">
+                            Clear answers on timelines, mobile usability, booking integrations, and
+                            how a risk-free live preview works.
+                          </p>
+                        </RevealBlock>
+                      </div>
+
+                      <div className="lg:col-span-8">
+                        <FaqAccordion items={FAQ_ITEMS} />
+                      </div>
                     </div>
                   </div>
                 </section>
@@ -800,8 +828,9 @@ export default function App() {
                       </MaskedLineReveal>
                       <RevealBlock y={16} delay={0.12}>
                         <p className="text-base leading-relaxed text-[#D4D4D8] max-w-xl">
-                          Whether you run a real estate firm, fashion label, or service brand, reach
-                          out to discuss your website.
+                          Whether you run a home service business, clinic, wellness brand,
+                          hospitality venue, or need a focused one-page site, reach out to discuss
+                          your website.
                         </p>
                       </RevealBlock>
 

@@ -143,9 +143,9 @@ export function CaseStudyModal({
                       <div className="text-sm font-medium text-[#F4F4F5]">{project.role}</div>
                     </div>
                     <div>
-                      <div className="text-xs text-[#71717A] mb-1">Measured Outcome</div>
-                      <div className="text-sm font-semibold text-[#60A5FA]">
-                        {project.outcomeMetric}
+                      <div className="text-xs text-[#71717A] mb-1">Concept Focus</div>
+                      <div className="text-sm font-medium text-[#60A5FA]">
+                        {project.projectFocus}
                       </div>
                     </div>
                   </div>

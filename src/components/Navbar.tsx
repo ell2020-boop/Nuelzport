@@ -13,7 +13,8 @@ const NAV_LINKS: { id: SectionId; page: PageId; label: string; href: string }[] 
   { id: 'works', page: 'home', label: 'Works', href: '#works' },
   { id: 'services', page: 'home', label: 'Services', href: '#services' },
   { id: 'about', page: 'about', label: 'About', href: '#about' },
-  { id: 'reviews', page: 'about', label: 'Reviews', href: '#reviews' },
+  { id: 'guarantees', page: 'about', label: 'Guarantees', href: '#guarantees' },
+  { id: 'faq', page: 'about', label: 'FAQ', href: '#faq' },
   { id: 'contact', page: 'about', label: 'Contact', href: '#contact' },
 ];
 
