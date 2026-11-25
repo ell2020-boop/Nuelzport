@@ -23,6 +23,7 @@ import {
 import { Navbar } from './components/Navbar';
 import { ResilientImage } from './components/ResilientImage';
 import { CaseStudyModal } from './components/CaseStudyModal';
+import { HeroCodingBackground } from './components/HeroCodingBackground';
 import {
   EDITORIAL_EASE,
   RevealBlock,
@@ -54,6 +55,23 @@ function parseHashToRoute(hash: string): { page: PageId; section: SectionId } {
   return { page: 'home', section: 'home' };
 }
 
+function getElementDocumentTop(el: HTMLElement): number {
+  let top = 0;
+  let current: HTMLElement | null = el;
+  while (current) {
+    top += current.offsetTop;
+    current = current.offsetParent as HTMLElement | null;
+  }
+  return top;
+}
+
+function PageMountNotifier({ onMount }: { onMount: () => void }) {
+  useEffect(() => {
+    onMount();
+  }, [onMount]);
+  return null;
+}
+
 export default function App() {
   const initialRoute =
     typeof window !== 'undefined'
@@ -65,27 +83,73 @@ export default function App() {
   const [activeCategory, setActiveCategory] = useState<ProjectCategory>('All Work');
   const [selectedProject, setSelectedProject] = useState<PortfolioProject | null>(null);
   const pendingScrollSectionRef = useRef<SectionId | null>(null);
+  const isProgrammaticScrollRef = useRef(false);
+  const scrollLockTimerRef = useRef<number | null>(null);
+  const heroSectionRef = useRef<HTMLElement | null>(null);
 
-  const scrollToSectionTarget = useCallback((sectionId: SectionId) => {
-    requestAnimationFrame(() => {
-      if (
-        sectionId === 'works' ||
-        sectionId === 'services' ||
-        sectionId === 'reviews' ||
-        sectionId === 'contact'
-      ) {
-        const el = document.getElementById(`${sectionId}-section`);
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth' });
-          return;
-        }
-      }
-      window.scrollTo({ top: 0, behavior: 'instant' });
-    });
+  const lockScrollSpyBriefly = useCallback((durationMs = 750) => {
+    isProgrammaticScrollRef.current = true;
+    if (scrollLockTimerRef.current !== null) {
+      window.clearTimeout(scrollLockTimerRef.current);
+    }
+    scrollLockTimerRef.current = window.setTimeout(() => {
+      isProgrammaticScrollRef.current = false;
+      scrollLockTimerRef.current = null;
+    }, durationMs);
   }, []);
+
+  const scrollToSectionTarget = useCallback(
+    (sectionId: SectionId, resetToTopFirst = false) => {
+      if (resetToTopFirst) {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+
+      if (sectionId === 'home') {
+        lockScrollSpyBriefly(300);
+        window.scrollTo({ top: 0, behavior: resetToTopFirst ? 'instant' : 'smooth' });
+        return;
+      }
+
+      lockScrollSpyBriefly(800);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const el = document.getElementById(`${sectionId}-section`);
+          if (el) {
+            const headerOffset = 64;
+            const targetTop = Math.max(0, getElementDocumentTop(el) - headerOffset);
+            window.scrollTo({ top: targetTop, behavior: 'smooth' });
+            return;
+          }
+          window.scrollTo({ top: 0, behavior: 'instant' });
+        });
+      });
+    },
+    [lockScrollSpyBriefly],
+  );
 
   useEffect(() => {
     document.title = PAGE_TITLES[activePage];
+  }, [activePage]);
+
+  useEffect(() => {
+    const sectionsForPage: SectionId[] =
+      activePage === 'home' ? ['home', 'works', 'services'] : ['about', 'reviews', 'contact'];
+
+    const onScroll = () => {
+      if (isProgrammaticScrollRef.current) return;
+      const readingLine = window.scrollY + 140;
+      let current: SectionId = sectionsForPage[0];
+      for (const id of sectionsForPage) {
+        const el = document.getElementById(`${id}-section`);
+        if (el && getElementDocumentTop(el) <= readingLine) {
+          current = id;
+        }
+      }
+      setActiveSection((prev) => (prev === current ? prev : current));
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, [activePage]);
 
   useEffect(() => {
@@ -95,7 +159,7 @@ export default function App() {
       setActivePage(next.page);
       setActiveSection(next.section);
       if (isSamePage) {
-        scrollToSectionTarget(next.section);
+        scrollToSectionTarget(next.section, false);
       } else {
         pendingScrollSectionRef.current = next.section;
       }
@@ -116,20 +180,15 @@ export default function App() {
     }
 
     if (isSamePage) {
-      scrollToSectionTarget(resolvedSection);
+      scrollToSectionTarget(resolvedSection, false);
     } else {
       pendingScrollSectionRef.current = resolvedSection;
     }
   };
 
   useEffect(() => {
-    if (
-      initialRoute.section === 'works' ||
-      initialRoute.section === 'services' ||
-      initialRoute.section === 'reviews' ||
-      initialRoute.section === 'contact'
-    ) {
-      scrollToSectionTarget(initialRoute.section);
+    if (initialRoute.section !== 'home' && initialRoute.section !== 'about') {
+      scrollToSectionTarget(initialRoute.section, true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -138,7 +197,7 @@ export default function App() {
     const target = pendingScrollSectionRef.current;
     if (!target) return;
     pendingScrollSectionRef.current = null;
-    scrollToSectionTarget(target);
+    scrollToSectionTarget(target, true);
   }, [scrollToSectionTarget]);
 
   const filteredProjects =
@@ -166,7 +225,7 @@ export default function App() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div id="top" className="min-h-screen bg-[#050505] text-[#F4F4F5] flex flex-col overflow-x-clip">
+      <div id="top" className="min-h-screen bg-black-blue-gradient text-[#F4F4F5] flex flex-col overflow-x-clip">
         <Navbar activeSection={activeSection} onNavigate={navigateToPage} />
 
         <main className="flex-1 flex flex-col">
@@ -179,124 +238,129 @@ export default function App() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.24, ease: EDITORIAL_EASE }}
-                onAnimationStart={flushPendingScroll}
                 className="flex-1 flex flex-col"
               >
+                <PageMountNotifier onMount={flushPendingScroll} />
                 {/* Hero & Proof Strip */}
                 <section
+                  ref={heroSectionRef}
                   id="home-section"
-                  className="relative max-w-[1280px] w-full mx-auto px-5 sm:px-8 pt-12 pb-16 lg:pt-16 lg:pb-20"
+                  className="relative w-full overflow-hidden"
                 >
+                  <HeroCodingBackground sectionRef={heroSectionRef} />
+
                   {/* Subtle Ambient Studio Glow */}
                   <div
                     aria-hidden="true"
-                    className="animate-ambient-glow pointer-events-none absolute -top-12 right-0 w-[420px] h-[420px] rounded-full bg-[#2563EB]/10 blur-[110px]"
+                    className="animate-ambient-glow pointer-events-none absolute -top-12 right-0 w-[420px] h-[420px] rounded-full bg-[#2563EB]/15 blur-[110px]"
                   />
 
-                  <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-stretch">
-                    {/* Left Column: Typographic Hierarchy */}
-                    <div className="lg:col-span-7 flex flex-col justify-between py-2">
-                      <div className="space-y-6">
-                        <RevealBlock immediate y={14} delay={0.02}>
-                          <p className="text-sm font-medium text-[#A1A1AA]">
-                            <span>{DESIGNER_PROFILE.title}</span>
-                            <span className="mx-2 text-[#52525B]" aria-hidden="true">
-                              ·
-                            </span>
-                            <span>{DESIGNER_PROFILE.location}</span>
-                          </p>
-                        </RevealBlock>
+                  <div className="relative z-10 max-w-[1280px] w-full mx-auto px-5 sm:px-8 pt-12 pb-16 lg:pt-16 lg:pb-20">
+                    <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-stretch">
+                      {/* Left Column: Typographic Hierarchy */}
+                      <div className="lg:col-span-7 flex flex-col justify-between py-2">
+                        <div className="space-y-6">
+                          <RevealBlock immediate y={14} delay={0.02}>
+                            <p className="text-sm font-medium text-[#A1A1AA]">
+                              <span>{DESIGNER_PROFILE.title}</span>
+                              <span className="mx-2 text-[#52525B]" aria-hidden="true">
+                                ·
+                              </span>
+                              <span>{DESIGNER_PROFILE.location}</span>
+                            </p>
+                          </RevealBlock>
 
-                        <MaskedLineReveal immediate delay={0.08}>
-                          <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-semibold leading-[1.08] tracking-tight text-[#F4F4F5] max-w-2xl">
-                            Designing high-converting websites for ambitious businesses &amp; brands.
-                          </h1>
-                        </MaskedLineReveal>
+                          <MaskedLineReveal immediate delay={0.08}>
+                            <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-semibold leading-[1.08] tracking-tight text-[#F4F4F5] max-w-2xl">
+                              Designing high-converting websites for ambitious businesses &amp; brands.
+                            </h1>
+                          </MaskedLineReveal>
 
-                        <RevealBlock immediate y={16} delay={0.16}>
-                          <p className="text-base sm:text-lg leading-relaxed text-[#A1A1AA] max-w-xl">
-                            I partner with real estate firms, fashion labels, hospitality groups, and
-                            service businesses to craft memorable brand websites that build instant
-                            credibility and turn visitors into paying clients.
-                          </p>
+                          <RevealBlock immediate y={16} delay={0.16}>
+                            <p className="text-base sm:text-lg leading-relaxed text-[#D4D4D8] max-w-xl">
+                              I partner with real estate firms, fashion labels, hospitality groups, and
+                              service businesses to craft memorable brand websites that build instant
+                              credibility and turn visitors into paying clients.
+                            </p>
+                          </RevealBlock>
+                        </div>
+
+                        <RevealBlock immediate y={16} delay={0.24} className="mt-10 flex flex-wrap items-center gap-4">
+                          <motion.button
+                            type="button"
+                            onClick={() => navigateToPage('home', 'works')}
+                            whileHover={{ y: -2 }}
+                            whileTap={{ scale: 0.97 }}
+                            transition={{ duration: 0.18, ease: EDITORIAL_EASE }}
+                            className="cta-shimmer group inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-lg transition-colors duration-150 cursor-pointer whitespace-nowrap shrink-0"
+                          >
+                            <span>Explore Selected Works</span>
+                            <ArrowRight
+                              className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1"
+                              aria-hidden="true"
+                            />
+                          </motion.button>
                         </RevealBlock>
                       </div>
 
-                      <RevealBlock immediate y={16} delay={0.24} className="mt-10 flex flex-wrap items-center gap-4">
-                        <motion.button
-                          type="button"
-                          onClick={() => navigateToPage('home', 'works')}
-                          whileHover={{ y: -2 }}
-                          whileTap={{ scale: 0.97 }}
-                          transition={{ duration: 0.18, ease: EDITORIAL_EASE }}
-                          className="cta-shimmer group inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-lg transition-colors duration-150 cursor-pointer whitespace-nowrap shrink-0"
-                        >
-                          <span>Explore Selected Works</span>
-                          <ArrowRight
-                            className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1"
-                            aria-hidden="true"
+                      {/* Right Column: Studio Workspace Visual with 3D Interactive Tilt */}
+                      <div className="lg:col-span-5">
+                        <TiltMediaFrame className="group relative h-80 sm:h-[420px] lg:h-full min-h-[380px] overflow-hidden rounded-2xl border border-[#27272A] hover:border-[#3B82F6]/60 bg-[#0C0C0E] shadow-2xl shadow-black/60 transition-colors duration-500">
+                          <ResilientImage
+                            src="/src/assets/images/hero_home_service_website_1795569770291.jpg"
+                            alt="High-end luxury home service website displayed on a frameless studio monitor"
+                            title="Residence & Co. Home Service Website"
+                            className="w-full h-full object-cover transition-[transform,filter] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05] group-hover:brightness-105 will-change-transform"
                           />
-                        </motion.button>
-                      </RevealBlock>
+                          <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#050505]/85 via-transparent to-[#3B82F6]/10 opacity-90 group-hover:opacity-100 transition-opacity duration-500"
+                          />
+                          <div className="absolute z-20 bottom-5 left-5 right-5 flex items-center justify-between gap-4 text-xs text-[#E4E4E7]">
+                            <span>{DESIGNER_PROFILE.availability}</span>
+                            <span className="font-mono tabular-nums text-[#60A5FA]">2026 Portfolio</span>
+                          </div>
+                        </TiltMediaFrame>
+                      </div>
                     </div>
 
-                    {/* Right Column: Studio Workspace Visual with 3D Interactive Tilt */}
-                    <div className="lg:col-span-5">
-                      <TiltMediaFrame className="group relative h-80 sm:h-[420px] lg:h-full min-h-[380px] overflow-hidden rounded-2xl border border-[#27272A] hover:border-[#3B82F6]/60 bg-[#0C0C0E] transition-colors duration-500">
-                        <ResilientImage
-                          src="/src/assets/images/hero_studio_workspace_1795310700218.jpg"
-                          alt="Fortune Allwell web design studio desk with architectural display"
-                          title="Fortune Allwell Studio"
-                          className="w-full h-full object-cover transition-[transform,filter] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] grayscale-[12%] group-hover:grayscale-0 group-hover:scale-[1.05] group-hover:brightness-105 will-change-transform"
-                        />
-                        <div
-                          aria-hidden="true"
-                          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#050505]/85 via-transparent to-[#3B82F6]/10 opacity-90 group-hover:opacity-100 transition-opacity duration-500"
-                        />
-                        <div className="absolute z-20 bottom-5 left-5 right-5 flex items-center justify-between gap-4 text-xs text-[#E4E4E7]">
-                          <span>{DESIGNER_PROFILE.availability}</span>
-                          <span className="font-mono tabular-nums text-[#60A5FA]">2026 Portfolio</span>
-                        </div>
-                      </TiltMediaFrame>
+                    {/* Full-Width 4-Column Proof Strip */}
+                    <div className="mt-14 pt-8 border-t border-[#27272A] grid grid-cols-2 lg:grid-cols-4 gap-8">
+                      {PROOF_METRICS.map((metric, idx) => (
+                        <motion.div
+                          key={metric.label}
+                          initial={{ opacity: 0, y: 18 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true, amount: 0.3 }}
+                          transition={{
+                            duration: 0.55,
+                            delay: idx * 0.08,
+                            ease: EDITORIAL_EASE,
+                          }}
+                          whileHover={{ y: -3 }}
+                          className="group space-y-1 transition-transform duration-200"
+                        >
+                          <AnimatedMetricValue
+                            value={metric.value}
+                            className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-[#F4F4F5] group-hover:text-[#60A5FA] transition-colors duration-200 tabular-nums"
+                          />
+                          <div className="text-sm font-medium text-[#E4E4E7]">{metric.label}</div>
+                          <div className="text-xs text-[#A1A1AA]">{metric.context}</div>
+                        </motion.div>
+                      ))}
                     </div>
-                  </div>
-
-                  {/* Full-Width 4-Column Proof Strip */}
-                  <div className="mt-14 pt-8 border-t border-[#27272A] grid grid-cols-2 lg:grid-cols-4 gap-8">
-                    {PROOF_METRICS.map((metric, idx) => (
-                      <motion.div
-                        key={metric.label}
-                        initial={{ opacity: 0, y: 18 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, amount: 0.3 }}
-                        transition={{
-                          duration: 0.55,
-                          delay: idx * 0.08,
-                          ease: EDITORIAL_EASE,
-                        }}
-                        whileHover={{ y: -3 }}
-                        className="group space-y-1 transition-transform duration-200"
-                      >
-                        <AnimatedMetricValue
-                          value={metric.value}
-                          className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-[#F4F4F5] group-hover:text-[#60A5FA] transition-colors duration-200 tabular-nums"
-                        />
-                        <div className="text-sm font-medium text-[#E4E4E7]">{metric.label}</div>
-                        <div className="text-xs text-[#71717A]">{metric.context}</div>
-                      </motion.div>
-                    ))}
                   </div>
                 </section>
 
                 {/* SUBTLE EDITORIAL MARQUEE DIVIDER WITH EDGE FADE MASKS */}
                 <div
                   aria-hidden="true"
-                  className="relative border-y border-[#18181B] bg-[#09090B] py-3.5 overflow-hidden select-none"
+                  className="relative border-y border-[#18181B] bg-[#060911]/70 backdrop-blur-md py-3.5 overflow-hidden select-none"
                 >
-                  <div className="pointer-events-none absolute inset-y-0 left-0 w-16 sm:w-28 z-10 bg-gradient-to-r from-[#09090B] to-transparent" />
-                  <div className="pointer-events-none absolute inset-y-0 right-0 w-16 sm:w-28 z-10 bg-gradient-to-l from-[#09090B] to-transparent" />
+                  <div className="pointer-events-none absolute inset-y-0 left-0 w-16 sm:w-28 z-10 bg-gradient-to-r from-[#05070C] to-transparent" />
+                  <div className="pointer-events-none absolute inset-y-0 right-0 w-16 sm:w-28 z-10 bg-gradient-to-l from-[#05070C] to-transparent" />
 
-                  <div className="animate-editorial-marquee text-xs sm:text-sm tracking-wide text-[#71717A]">
+                  <div className="animate-editorial-marquee text-xs sm:text-sm tracking-wide text-[#94A3B8]">
                     {[0, 1].map((loopIdx) => (
                       <div key={loopIdx} className="flex items-center gap-8 pr-8 whitespace-nowrap">
                         <span>Real Estate Websites</span>
@@ -388,7 +452,7 @@ export default function App() {
                               layout: { duration: 0.38, ease: EDITORIAL_EASE },
                             }}
                             whileHover={{ y: -4 }}
-                            className={`group rounded-2xl border border-[#27272A] bg-[#0C0C0E] overflow-hidden transition-colors duration-300 hover:border-[#3B82F6]/45 ${
+                            className={`group rounded-2xl border border-[#27272A] bg-[#080B12]/80 backdrop-blur-md overflow-hidden transition-colors duration-300 hover:border-[#3B82F6]/45 shadow-xl shadow-black/30 ${
                               isWideFeatured ? 'md:col-span-2' : ''
                             }`}
                           >
@@ -459,7 +523,7 @@ export default function App() {
                 {/* Services Section */}
                 <section
                   id="services-section"
-                  className="border-t border-[#18181B] bg-[#09090B] scroll-mt-16"
+                  className="border-t border-[#18181B] bg-[#060911]/55 backdrop-blur-md scroll-mt-16"
                 >
                   <div className="max-w-[1280px] w-full mx-auto px-5 sm:px-8 py-20 lg:py-24">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
@@ -535,9 +599,9 @@ export default function App() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.24, ease: EDITORIAL_EASE }}
-                onAnimationStart={flushPendingScroll}
                 className="flex-1 flex flex-col"
               >
+                <PageMountNotifier onMount={flushPendingScroll} />
                 {/* About Section */}
                 <section
                   id="about-section"
@@ -577,7 +641,7 @@ export default function App() {
                           </h1>
                         </MaskedLineReveal>
                         <RevealBlock immediate y={16} delay={0.16}>
-                          <p className="text-base leading-relaxed text-[#A1A1AA]">
+                          <p className="text-base leading-relaxed text-[#D4D4D8]">
                             Over the past two years, I’ve helped real estate agencies, fashion
                             labels, consultancies, and service businesses replace generic templates
                             with bespoke websites that earn immediate customer trust. Every layout is
@@ -661,7 +725,7 @@ export default function App() {
                 {/* Reviews Section */}
                 <section
                   id="reviews-section"
-                  className="border-t border-[#18181B] bg-[#09090B] scroll-mt-16"
+                  className="border-t border-[#18181B] bg-[#060911]/55 backdrop-blur-md scroll-mt-16"
                 >
                   <div className="max-w-[1280px] w-full mx-auto px-5 sm:px-8 py-20 lg:py-24">
                     <div className="space-y-2 mb-12 max-w-xl">
@@ -688,7 +752,7 @@ export default function App() {
                             ease: EDITORIAL_EASE,
                           }}
                           whileHover={{ y: -5 }}
-                          className="group rounded-2xl border border-[#27272A] hover:border-[#3B82F6]/45 bg-[#0C0C0E] transition-colors duration-300"
+                          className="group rounded-2xl border border-[#27272A] hover:border-[#3B82F6]/45 bg-[#080B12]/80 backdrop-blur-md shadow-xl shadow-black/30 transition-colors duration-300"
                         >
                           <SpotlightSurface className="p-6 sm:p-7 h-full flex flex-col justify-between gap-6">
                             <p className="relative z-20 text-sm leading-relaxed text-[#E4E4E7]">
@@ -722,7 +786,7 @@ export default function App() {
                 {/* Contact Section */}
                 <section
                   id="contact-section"
-                  className="relative border-t border-[#18181B] bg-[#050505] flex-1 scroll-mt-16"
+                  className="relative border-t border-[#18181B] bg-[#05070C]/45 backdrop-blur-sm flex-1 scroll-mt-16"
                 >
                   <div className="max-w-[1280px] w-full mx-auto px-5 sm:px-8 py-20 lg:py-28">
                     <div className="space-y-6">
@@ -735,7 +799,7 @@ export default function App() {
                         </h2>
                       </MaskedLineReveal>
                       <RevealBlock y={16} delay={0.12}>
-                        <p className="text-base leading-relaxed text-[#A1A1AA] max-w-xl">
+                        <p className="text-base leading-relaxed text-[#D4D4D8] max-w-xl">
                           Whether you run a real estate firm, fashion label, or service brand, reach
                           out to discuss your website.
                         </p>
@@ -781,7 +845,7 @@ export default function App() {
 
                       <RevealBlock y={10} delay={0.24}>
                         <p className="text-center text-sm text-[#A1A1AA]">
-                          I respond within 12 hours.
+                          I respond within 4 hours.
                         </p>
                       </RevealBlock>
                     </div>
@@ -824,7 +888,7 @@ export default function App() {
         </main>
 
         {/* QUIET FOOTER */}
-        <footer className="border-t border-[#18181B] bg-[#050505]">
+        <footer className="border-t border-[#18181B] bg-[#05070C]/80 backdrop-blur-md">
           <div className="max-w-[1280px] mx-auto px-5 sm:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#71717A]">
             <div>
               © <span className="tabular-nums">2026</span> {DESIGNER_PROFILE.name}. All rights reserved.

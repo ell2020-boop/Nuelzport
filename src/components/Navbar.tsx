@@ -45,8 +45,8 @@ export function Navbar({ activeSection, onNavigate }: NavbarProps) {
     <header
       className={`sticky top-0 z-40 transition-colors duration-200 border-b ${
         scrolled
-          ? 'bg-[#050505]/92 backdrop-blur-md border-[#27272A]'
-          : 'bg-[#050505]/80 backdrop-blur-sm border-[#18181B]'
+          ? 'bg-[#05070C]/90 backdrop-blur-md border-[#27272A]'
+          : 'bg-[#05070C]/75 backdrop-blur-sm border-[#18181B]'
       }`}
     >
       <div className="max-w-[1280px] mx-auto px-5 sm:px-8 h-16 flex items-center justify-between gap-8">

@@ -25,6 +25,23 @@
   }
 }
 
+.bg-black-blue-gradient {
+  background-color: #050505;
+  background-image:
+    radial-gradient(ellipse 75% 50% at 14% 12%, rgba(37, 99, 235, 0.14), transparent 60%),
+    radial-gradient(ellipse 65% 50% at 86% 38%, rgba(29, 78, 216, 0.12), transparent 58%),
+    radial-gradient(ellipse 70% 50% at 46% 86%, rgba(59, 130, 246, 0.1), transparent 60%),
+    linear-gradient(
+      135deg,
+      #050505 0%,
+      #070b14 28%,
+      #0b1426 50%,
+      #060911 76%,
+      #050505 100%
+    );
+  background-attachment: fixed;
+}
+
 @keyframes editorial-marquee {
   0% {
     transform: translate3d(0, 0, 0);

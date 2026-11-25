@@ -51,7 +51,7 @@ export const DESIGNER_PROFILE = {
   email: 'fortuneallwell2020@gmail.com',
   whatsappUrl: 'https://wa.me/+2348144771422',
   whatsappDisplay: '+234 814 477 1422',
-  location: 'Lagos · Remote Worldwide',
+  location: 'Remote Worldwide',
   availability: 'Accepting client projects',
 };
 
